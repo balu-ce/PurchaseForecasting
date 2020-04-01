@@ -1,0 +1,37 @@
+{
+  "size": 0,
+  "query": {
+        "range" : {
+            "Order Date": {
+                "lte" : "1483209000000"
+            }
+        }
+    },
+  "aggs": {
+  "mean_of_sales":{
+                "date_histogram" : {
+                "field" : "Order Date",
+                "calendar_interval" : "month"
+            },
+        "aggs":{
+          "sales": {
+                    "sum": {
+                        "field": "Sales"
+                    }
+                },
+                "sales_bucket_sort": {
+                    "bucket_sort": {
+                        "sort": [
+                          {"_key": {"order": "desc"}}
+                        ]
+                        }
+        }
+        }
+        },
+        "stats_sales": {
+            "extended_stats_bucket": {
+                "buckets_path": "mean_of_sales>sales"
+            }
+        }
+}
+}
