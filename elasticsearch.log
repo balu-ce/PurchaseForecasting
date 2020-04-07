@@ -1,0 +1,3 @@
+2020-04-07 12:35:39,304 - werkzeug - WARNING -  * Debugger is active!
+2020-04-07 12:35:39,305 - werkzeug - INFO -  * Debugger PIN: 316-429-236
+2020-04-07 12:35:42,337 - werkzeug - INFO - 127.0.0.1 - - [07/Apr/2020 12:35:42] "[37mGET /forecast_ingest_pipeline?interval=monthly HTTP/1.1[0m" 200 -

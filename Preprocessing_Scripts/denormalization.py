@@ -1,5 +1,5 @@
 
-class deNormalization:
+class DeNormalization:
     def __init__(self, data):
         self.data = data
 
