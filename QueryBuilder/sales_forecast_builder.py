@@ -70,3 +70,12 @@ class Sales_Query_Builder:
             }
         }
         return query
+
+    @staticmethod
+    def get_all_sales_query():
+        query = {
+            "query": {
+                "match_all": {}
+            }
+        }
+        return query

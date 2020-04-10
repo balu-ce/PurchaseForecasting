@@ -1,13 +1,12 @@
 class Normalization:
-    def __init__(self, data):
-        self.data = data
 
-    def elasticsearch_forecast_normalize(self, stats_data):
+    @staticmethod
+    def elasticsearch_forecast_normalize(data, stats_data):
         """
             Function is used for normalizing a dataset coming from a data source of elasticsearch
         """
         norm_arr = list()
-        temp = self.data['aggregations']['sales_per_month']['buckets']
+        temp = data['aggregations']['sales_per_month']['buckets']
         mean = stats_data['aggregations']['stats_sales']['avg']
         std_dev = stats_data['aggregations']['stats_sales']['std_deviation']
         temp.pop(0)

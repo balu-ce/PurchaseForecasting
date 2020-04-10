@@ -12,3 +12,7 @@ class ES_Logger:
     @staticmethod
     def warn_logs(message: str):
         logging.error(message)
+
+    @staticmethod
+    def info_logs(message: str):
+        logging.info(message)
