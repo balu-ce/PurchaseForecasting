@@ -1,28 +1,26 @@
 import json
-
-from flask import Flask, request
-
+from flask import Blueprint, request, jsonify, url_for
+import numpy as np
 from IngestionLayer.elastic_forecast_ingest import Elasticsearch_ingest
-from Preprocessing_Scripts.RFM_calculation import RFM_Analysis
 from Preprocessing_Scripts.denormalization import DeNormalization
 from Preprocessing_Scripts.normalization import Normalization
-from db_operations.elasticsearch_oper import Elastic_Sales_Connect
-import numpy as np
 import requests
 
+from app.tasks import rfm_analysis
+from db_operations.elasticsearch_oper import Elastic_Sales_Connect
 from loggers.es_logger import ES_Logger
 
-app = Flask(__name__)
+bp = Blueprint("sales_analysis", __name__)
 
 Tensorflow_Base_URL = "http://localhost:8501/v1/models/"
 
 
-@app.route('/')
+@bp.route('/')
 def hello():
     return "Hello World!"
 
 
-@app.route('/forecast_ingest_pipeline')
+@bp.route('/forecast_ingest_pipeline')
 def ingest_pipeline():
     interval = request.args.get('interval', default='monthly', type=str)
     es = Elastic_Sales_Connect()  # setup a elasticsearch connection
@@ -43,14 +41,7 @@ def ingest_pipeline():
     return "Data Ingested Successfully"
 
 
-@app.route('/rfm_ingest_pipeline')
+@bp.route('/rfm_ingest_pipeline')
 def ingest_rfm_value():
-    es = Elastic_Sales_Connect()  # setup a elasticsearch connection
-    sales_data = [hit["_source"] for hit in es.elastic_get_sales_data()]
-    rfm_data = RFM_Analysis(sales_data)
-    rfm_data.rfm_calc()
-    return 'Test'
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    task = rfm_analysis.apply_async()
+    return task.id

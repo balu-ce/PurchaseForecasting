@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 from datetime import datetime
 from sklearn.cluster import KMeans
@@ -5,7 +7,6 @@ from sklearn.cluster import KMeans
 class RFM_Analysis:
     def __init__(self, data):
         self.df = pd.DataFrame.from_dict(data)
-        print(self.df)
 
     @staticmethod
     def order_cluster(cluster_field_name, target_field_name, data_frame, ascending):
@@ -17,34 +18,21 @@ class RFM_Analysis:
         df_final = df_final.rename(columns={"index": cluster_field_name})
         return df_final
 
-    async def rfm_calc(self):
+    def rfm_calc(self):
         df = self.df
         df['Order_Date'] = pd.to_datetime(df['Order_Date'])
         tx_1y = df[(df.Order_Date <= datetime(2017, 12, 31)) & (df.Order_Date >= datetime(2017, 1, 1))].reset_index(
             drop=True)
         tx_1y['Sales'] = df['Sales'].astype(float)
         tx_user = pd.DataFrame(tx_1y['Customer_ID'].unique())
-        tx_user.columns = ['Customer_ID']
-        tx_next_purchase = df.drop_duplicates(['Customer_ID', 'Order_Date'], keep='last')
-        tx_max = tx_next_purchase.groupby('Customer_ID').Order_Date.nlargest(2).reset_index()
-        tx_next_first_purchase = tx_max.groupby('Customer_ID').Order_Date.min().reset_index()
-        tx_next_first_purchase.columns = ['Customer_ID', 'MinPurchaseDate']
-        tx_last_purchase = tx_max.groupby('Customer_ID').Order_Date.max().reset_index()
-        tx_last_purchase.columns = ['Customer_ID', 'MaxPurchaseDate']
-        tx_purchase_dates = pd.merge(tx_last_purchase, tx_next_first_purchase, on='Customer_ID', how='left')
-        # calculate the time difference in days:
-        tx_purchase_dates['NextPurchaseDay'] = (
-                tx_purchase_dates['MaxPurchaseDate'] - tx_purchase_dates['MinPurchaseDate']).dt.days
-        # merge with tx_user
-        tx_user = pd.merge(tx_user, tx_purchase_dates[['Customer_ID', 'NextPurchaseDay']], on='Customer_ID', how='left')
-        tx_user.sort_values("NextPurchaseDay", axis=0, ascending=True, inplace=True, na_position='last')
 
+        tx_user.columns = ['Customer_ID']
         # FEATURE ENGINEERING
         tx_max_purchase = tx_1y.groupby('Customer_ID').Order_Date.max().reset_index()
         tx_max_purchase.columns = ['Customer_ID', 'MaxPurchaseDate']
 
         tx_max_purchase['Recency'] = (
-                    tx_max_purchase['MaxPurchaseDate'].max() - tx_max_purchase['MaxPurchaseDate']).dt.days
+                tx_max_purchase['MaxPurchaseDate'].max() - tx_max_purchase['MaxPurchaseDate']).dt.days
         tx_user = pd.merge(tx_user, tx_max_purchase[['Customer_ID', 'Recency']], on='Customer_ID')
 
         kmeans = KMeans(n_clusters=4)
@@ -106,11 +94,6 @@ class RFM_Analysis:
         tx_day_order_last = tx_day_order_last.dropna()
         tx_day_order_last = pd.merge(tx_day_order_last, tx_day_diff, on='Customer_ID')
 
-        tx_user = pd.merge(tx_user, tx_day_order_last, on='Customer_ID', how='right')
-
-        print(tx_user.head(5))
-        final_out = tx_user.to_json()[1:-1].replace('},{', '} {')
-        print("Final Out")
-        print(final_out)
-        return final_out
-
+        tx_user = pd.merge(tx_user, tx_day_order_last[
+            ['Customer_ID', 'DayDiff', 'DayDiff2', 'DayDiff3', 'DayDiffMean', 'DayDiffStd']], on='Customer_ID')
+        return json.loads(tx_user.reset_index().to_json(orient='records'))

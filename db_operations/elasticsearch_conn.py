@@ -33,11 +33,3 @@ class Elastic_Conn_Sales_data:
             print(ex)
             ES_Logger.error_logs("Error in connecting to Elasticsearch")
         return es
-
-    @staticmethod
-    def get_sales_index():
-        return config['ELASTICSEARCH']['sales_data_index']
-
-    @staticmethod
-    def get_sales_forecast_index():
-        return config['ELASTICSEARCH']['forecast_index']

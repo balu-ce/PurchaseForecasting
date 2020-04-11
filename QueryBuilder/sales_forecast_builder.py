@@ -7,7 +7,7 @@ class Sales_Query_Builder:
             "query": {
                 "range": {
                     "Order_Date": {
-                        "lte": "31/12/2016"
+                        "lte": "2015-12-31"
                     }
                 }
             },

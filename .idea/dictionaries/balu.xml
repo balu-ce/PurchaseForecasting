@@ -2,7 +2,11 @@
   <dictionary name="balu">
     <words>
       <w>aggs</w>
+      <w>dataframe</w>
+      <w>groupby</w>
+      <w>kmeans</w>
       <w>pred</w>
+      <w>taskstatus</w>
       <w>tensorflow</w>
     </words>
   </dictionary>
